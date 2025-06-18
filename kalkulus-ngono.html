@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portal Belajar Kalkulus - Pembelajaran Interaktif</title>
+
+<!-- Google Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+<!-- Math rendering -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* Reset & base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body, html {
+    margin: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    color: #2d3748;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Layout */
+  #container {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background: transparent;
+  }
+
+  /* Header dengan progress dan statistics */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    user-select: none;
+    transition: all 0.3s ease;
+  }
+  header:hover {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 6px 30px rgba(102, 126, 234, 0.2);
+  }
+  header .logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: default;
+    font-weight: 700;
+    font-size: 1.4rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header .logo .material-icons {
+    font-size: 32px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* User Stats dalam header */
+  .user-stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    font-size: 0.9rem;
+  }
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+  }
+  .stat-item:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: scale(1.05);
+  }
+  .stat-icon {
+    font-size: 18px;
+    color: #667eea;
+  }
+  .stat-value {
+    font-weight: 600;
+    color: #2d3748;
+  }
+
+  /* Main content area */
+  .main-content {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 80px);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Sidebar dengan progress tracking */
+  nav {
+    position: sticky;
+    top: 80px;
+    width: 320px;
+    height: calc(100vh - 80px);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(180%) blur(25px);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    color: #2d3748;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    user-select: none;
+    border-radius: 0 20px 20px 0;
+  }
+  nav::-webkit-scrollbar {
+    width: 6px;
+  }
+  nav::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+  }
+  nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav li {
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #4a5568;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  nav a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    transition: left 0.3s ease;
+    z-index: -1;
+  }
+  nav a:hover::before,
+  nav a.active::before {
+    left: 0;
+  }
+  nav a:hover,
+  nav a:focus-visible,
+  nav a.active {
+    color: white;
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+  nav a .material-icons {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+  }
+  nav a:hover .material-icons,
+  nav a.active .material-icons {
+    transform: scale(1.1);
+  }
+
+  /* Progress indicator per topik */
+  .topic-progress {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+  .topic-progress.completed {
+    background: #48bb78;
+    border-color: #48bb78;
+    color: white;
+  }
+  .topic-progress.in-progress {
+    background: #ed8936;
+    border-color: #ed8936;
+    color: white;
+  }
+
+  /* Main content */
+  main {
+    flex: 1;
+    padding: 2rem 3rem;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 20px 0 0 20px;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Section dengan quiz integration */
+  section {
+    margin-bottom: 4rem;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.8s ease forwards;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+  }
+  section.visible {
+    opacity: 1;
+    transform: none;
+  }
+  section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  section h2 {
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 2rem;
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, #2d3748, #667eea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+  }
+
+  /* Typography */
+  p, li {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+  }
+  ul {
+    padding-left: 2rem;
+  }
+  li {
+    margin-bottom: 1rem;
+  }
+
+  /* Math expressions */
+  .math {
+    font-family: 'Courier New', Courier, monospace;
+    background: linear-gradient(135deg, #edf2f7, #e2e8f0);
+    color: #2d3748;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 2px solid #cbd5e0;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin: 0 4px;
+  }
+  .math:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Example blocks */
+  .example {
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    padding: 2rem;
+    border-radius: 15px;
+    border-left: 6px solid #667eea;
+    margin: 2rem 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2d3748;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .example::before {
+    content: '📊';
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    opacity: 0.6;
+  }
+  .example:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+    border-left-color: #764ba2;
+  }
+
+  /* Visualization Container */
+  .visualization {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    position: relative;
+  }
+  .visualization h3 {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .visualization h3::before {
+    content: '📈';
+    font-size: 1.2rem;
+  }
+
+  /* Interactive controls */
+  .controls {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    font-weight: 500;
+    color: #4a5568;
+  }
+  .controls input[type="range"] {
+    width: 150px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Chart container */
+  .chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  /* Quiz Container */
+  .quiz-container {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 3rem 0;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .quiz-container::before {
+    content: '🧠';
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    font-size: 2rem;
+    opacity: 0.3;
+  }
+  .quiz-container h3 {
+    color: #667eea;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .quiz-container h3::before {
+    content: '🎯';
+    font-size: 1.2rem;
+  }
+
+  .quiz-question {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+  }
+  .quiz-question h4 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .quiz-options {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .quiz-option {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  .quiz-option:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateX(5px);
+  }
+  .quiz-option.selected {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+    color: #2d3748;
+  }
+  .quiz-option.correct {
+    background: rgba(72, 187, 120, 0.2);
+    border-color: #48bb78;
+    color: #22543d;
+  }
+  .quiz-option.incorrect {
+    background: rgba(245, 101, 101, 0.2);
+    border-color: #f56565;
+    color: #742a2a;
+  }
+
+  .quiz-feedback {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border-left: 4px solid #48bb78;
+    display: none;
+  }
+  .quiz-feedback.show {
+    display: block;
+    animation: slideInUp 0.5s ease;
+  }
+  .quiz-feedback.incorrect {
+    border-left-color: #f56565;
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .quiz-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 1rem 0.5rem 0 0;
+    font-size: 1rem;
+  }
+  .quiz-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  }
+  .quiz-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Achievement System */
+  .achievement-popup {
+    position: fixed;
+    top: 100px;
+    right: 2rem;
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(72, 187, 120, 0.3);
+    transform: translateX(100%);
+    transition: transform 0.5s ease;
+    z-index: 2000;
+    max-width: 300px;
+  }
+  .achievement-popup.show {
+    transform: translateX(0);
+  }
+  .achievement-popup h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .achievement-popup p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  /* Progress Dashboard */
+  .progress-dashboard {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+  }
+  .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .progress-item {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  .progress-item h4 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .progress-item .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
+  .progress-item .label {
+    color: #4a5568;
+    font-size: 0.9rem;
+  }
+
+  /* Badge System */
+  .badges-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+  .badge {
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #744210;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    animation: bounce 2s infinite;
+  }
+  .badge.locked {
+    background: #e2e8f0;
+    color: #a0aec0;
+    box-shadow: none;
+    animation: none;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+
+  /* Learning Path */
+  .learning-path {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 15px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+  }
+  .learning-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    position: relative;
+  }
+  .learning-step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  .step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+  }
+  .step-icon.completed {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+  }
+  .step-icon.current {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+    50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6); }
+    100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+  }
+  .step-title {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+  }
+
+  /* Details dengan animation */
+  details {
+    margin-top: 2rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 15px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+  }
+  details[open] {
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.15);
+    transform: translateY(-3px);
+  }
+  summary {
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #667eea;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  summary::before {
+    content: '🔍';
+    font-size: 1rem;
+  }
+  summary:hover {
+    color: #764ba2;
+  }
+  details p {
+    margin-top: 1rem;
+    color: #4a5568;
+  }
+
+  /* Footer */
+  footer {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem 2rem;
+    font-size: 0.9rem;
+    color: #4a5568;
+    text-align: center;
+    border-top: 3px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+  }
+
+  /* Scroll progress */
+  #scroll-progress {
+    position: fixed;
+    top: 80px;
+    left: 320px;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.3s ease;
+    z-index: 1200;
+  }
+
+  /* Responsive */
+  @media (max-width: 1023px) {
+    nav {
+      width: 300px;
+    }
+    #scroll-progress {
+      left: 300px;
+    }
+    main {
+      padding: 2rem;
+    }
+    .user-stats {
+      gap: 1rem;
+    }
+    .stat-item {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  }
+  @media (max-width: 767px) {
+    header {
+      height: 70px;
+      padding-left: 70px;
+    }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1150;
+      border-radius: 0;
+    }
+    nav.open {
+      transform: translateX(0);
+    }
+    #scroll-progress {
+      left: 0;
+      top: 70px;
+    }
+    .main-content {
+      margin-left: 0;
+    }
+    main {
+      padding: 1.5rem;
+      border-radius: 0;
+      margin: 0;
+    }
+    .learning-path {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .learning-step:not(:last-child)::after {
+      content: '↓';
+      position: static;
+      transform: none;
+      margin: 0.5rem 0;
+    }
+    .user-stats {
+      display: none;
+    }
+    .progress-grid {
+      grid-template-columns: 1fr;
+    }
+    .achievement-popup {
+      right: 1rem;
+      left: 1rem;
+      max-width: none;
+    }
+  }
+
+  /* Mobile hamburger */
+  .hamburger {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1300;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+  }
+  .hamburger:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+  @media (max-width: 767px) {
+    .hamburger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  /* MathJax styling */
+  .MathJax {
+    font-size: 1.1em !important;
+  }
+</style>
+
+<script src="https://lib.youware.com/youware-lib.1747145198.js" id="yourware-lib"></script></head>
+<body>
+
+<header>
+  <div class="logo" aria-label="Portal Belajar Kalkulus – Pembelajaran Interaktif">
+    <span class="material-icons" aria-hidden="true">calculate</span> Portal Kalkulus Interaktif
+  </div>
+  <div class="user-stats">
+    <div class="stat-item">
+      <span class="material-icons stat-icon">emoji_events</span>
+      <span class="stat-value" id="totalPoints">0</span>
+      <span>Poin</span>
+    </div>
+    <div class="stat-item">
+      <span class="material-icons stat-icon">star</span>
+      <span class="stat-value" id="totalBadges">0</span>
+      <span>Badge</span>
+    </div>
+    <div class="stat-item">
+      <span class="material-icons stat-icon">trending_up</span>
+      <span class="stat-value" id="overallProgress">0%</span>
+      <span>Progress</span>
+    </div>
+  </div>
+</header>
+
+<button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar-nav" id="menu-toggle">
+  <span class="material-icons">menu</span>
+</button>
+
+<div id="container">
+  <div class="main-content">
+    <nav id="sidebar-nav" aria-label="Navigasi Portal Kalkulus">
+      <ul>
+        <li><a href="#intro" class="nav-link active" aria-current="page"><span class="material-icons" aria-hidden="true">school</span>Pendahuluan<div class="topic-progress" data-topic="intro">0%</div></a></li>
+        <li><a href="#limits" class="nav-link"><span class="material-icons" aria-hidden="true">trending_flat</span>Limit<div class="topic-progress" data-topic="limits">0%</div></a></li>
+        <li><a href="#derivatives" class="nav-link"><span class="material-icons" aria-hidden="true">show_chart</span>Turunan<div class="topic-progress" data-topic="derivatives">0%</div></a></li>
+        <li><a href="#techniques" class="nav-link"><span class="material-icons" aria-hidden="true">engineering</span>Teknik Diferensiasi<div class="topic-progress" data-topic="techniques">0%</div></a></li>
+        <li><a href="#integrals" class="nav-link"><span class="material-icons" aria-hidden="true">functions</span>Integral<div class="topic-progress" data-topic="integrals">0%</div></a></li>
+        <li><a href="#fundamental-theorem" class="nav-link"><span class="material-icons" aria-hidden="true">gavel</span>Teorema Fundamental<div class="topic-progress" data-topic="fundamental">0%</div></a></li>
+        <li><a href="#series-sequences" class="nav-link"><span class="material-icons" aria-hidden="true">list_alt</span>Deret dan Barisan<div class="topic-progress" data-topic="series">0%</div></a></li>
+        <li><a href="#multivariable" class="nav-link"><span class="material-icons" aria-hidden="true">3d_rotation</span>Kalkulus Multivariabel<div class="topic-progress" data-topic="multivariable">0%</div></a></li>
+        <li><a href="#optimization" class="nav-link"><span class="material-icons" aria-hidden="true">speed</span>Masalah Optimasi<div class="topic-progress" data-topic="optimization">0%</div></a></li>
+        <li><a href="#applications" class="nav-link"><span class="material-icons" aria-hidden="true">rocket_launch</span>Aplikasi Kalkulus<div class="topic-progress" data-topic="applications">0%</div></a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section id="intro" class="section">
+        <h2>Pendahuluan Kalkulus</h2>
+        
+        <div class="progress-dashboard">
+          <h3 style="color: #667eea; margin-bottom: 1rem;">📊 Dashboard Pembelajaran</h3>
+          <div class="progress-grid">
+            <div class="progress-item">
+              <h4>Total Poin</h4>
+              <div class="value" id="dashboardPoints">0</div>
+              <div class="label">Poin yang dikumpulkan</div>
+            </div>
+            <div class="progress-item">
+              <h4>Quiz Selesai</h4>
+              <div class="value" id="dashboardQuizzes">0/10</div>
+              <div class="label">Kuis yang diselesaikan</div>
+            </div>
+            <div class="progress-item">
+              <h4>Badge Diraih</h4>
+              <div class="value" id="dashboardBadgesCount">0</div>
+              <div class="label">Pencapaian yang diraih</div>
+            </div>
+            <div class="progress-item">
+              <h4>Progress Keseluruhan</h4>
+              <div class="value" id="dashboardOverallProgress">0%</div>
+              <div class="label">Kemajuan belajar</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="badges-container">
+          <div class="badge locked" id="badge-beginner">🎓 Pemula</div>
+          <div class="badge locked" id="badge-quiz-master">🧠 Master Quiz</div>
+          <div class="badge locked" id="badge-perfect-score">⭐ Skor Sempurna</div>
+          <div class="badge locked" id="badge-dedicated">🔥 Belajar Konsisten</div>
+          <div class="badge locked" id="badge-expert">👑 Ahli Kalkulus</div>
+        </div>
+        
+        <div class="learning-path">
+          <div class="learning-step">
+            <div class="step-icon current" id="step-1">1</div>
+            <div class="step-title">Konsep Dasar</div>
+          </div>
+          <div class="learning-step">
+            <div class="step-icon" id="step-2">2</div>
+            <div class="step-title">Visualisasi</div>
+          </div>
+          <div class="learning-step">
+            <div class="step-icon" id="step-3">3</div>
+            <div class="step-title">Praktik</div>
+          </div>
+          <div class="learning-step">
+            <div class="step-icon" id="step-4">4</div>
+            <div class="step-title">Aplikasi</div>
+          </div>
+        </div>
+
+        <p>Kalkulus adalah cabang matematika yang mempelajari perubahan kontinu dan sangat penting dalam ilmu pengetahaan, rekayasa, dan ekonomi. Portal ini dirancang untuk memberikan pemahaman yang mendalam melalui <strong>visualisasi interaktif</strong> dan <strong>quiz yang menantang</strong>.</p>
+        
+        <p>Kalkulus terbagi menjadi dua bagian utama:</p>
+        <ul>
+          <li><strong>Kalkulus Diferensial</strong> - mempelajari laju perubahan dan kemiringan</li>
+          <li><strong>Kalkulus Integral</strong> - mempelajari akumulasi dan luas area</li>
+        </ul>
+
+        <div class="visualization">
+          <h3>Contoh Fungsi Dasar</h3>
+          <div class="chart-container">
+            <canvas id="basicFunctionChart"></canvas>
+          </div>
+          <div class="controls">
+            <label for="functionType">Pilih Fungsi:</label>
+            <select id="functionType" onchange="updateBasicChart()">
+              <option value="linear">Linear: f(x) = ax + b</option>
+              <option value="quadratic">Kuadrat: f(x) = ax² + bx + c</option>
+              <option value="cubic">Kubik: f(x) = ax³ + bx² + cx + d</option>
+              <option value="exponential">Eksponensial: f(x) = ae^(bx)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quiz-container">
+          <h3>Kuis: Konsep Dasar Kalkulus</h3>
+          <div class="quiz-question">
+            <h4>Apa yang dipelajari dalam kalkulus diferensial?</h4>
+            <div class="quiz-options" data-quiz="intro-1">
+              <div class="quiz-option" data-answer="wrong">Penjumlahan dan pengurangan</div>
+              <div class="quiz-option" data-answer="wrong">Perkalian dan pembagian</div>
+              <div class="quiz-option" data-answer="correct">Laju perubahan dan kemiringan</div>
+              <div class="quiz-option" data-answer="wrong">Geometri dasar</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Kalkulus diferensial mempelajari laju perubahan sesaat dan kemiringan garis singgung. Ini sangat berguna untuk menganalisis bagaimana suatu besaran berubah terhadap besaran lain.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('intro-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('intro-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="limits" class="section">
+        <h2>Limit</h2>
+        <p>Konsep <span class="math">limit</span> adalah dasar dari kalkulus. Limit menjelaskan perilaku suatu fungsi saat inputnya mendekati nilai tertentu. Konsep <span class="math">limit</span>, dengan notasi $\lim_{x \to a} f(x)$, menjadi penghubung antara kalkulus dan bidang matematika lainnya.</p>
+        
+        <div class="visualization">
+          <h3>Visualisasi Limit</h3>
+          <p>Geser slider untuk melihat bagaimana nilai x mendekati titik limit:</p>
+          <div class="controls">
+            <label for="limitPoint">Titik Limit:</label>
+            <input type="range" id="limitPoint" min="0" max="10" step="0.1" value="2" oninput="updateLimitChart()">
+            <span id="limitValue">2</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="limitChart"></canvas>
+          </div>
+        </div>
+
+        <div class="example" tabindex="0" aria-label="Contoh limit">
+          <strong>Contoh:</strong><br>
+          $$\lim_{x \to 2} (3x + 1) = 7$$
+          <p>Ketika x mendekati 2, nilai fungsi 3x + 1 mendekati 7.</p>
+        </div>
+        
+        <details>
+          <summary>Apa itu Limit?</summary>
+          <p>Limit adalah nilai yang didekati oleh sebuah fungsi saat input (variabel) mendekati nilai tertentu. Bayangkan seperti meneliti apa yang terjadi pada suatu fungsi ketika kita semakin dekat ke suatu titik, tanpa benar-benar mencapai titik tersebut.</p>
+        </details>
+
+        <div class="quiz-container">
+          <h3>Kuis: Konsep Limit</h3>
+          <div class="quiz-question">
+            <h4>Berapa nilai dari lim<sub>x→3</sub> (2x + 1)?</h4>
+            <div class="quiz-options" data-quiz="limits-1">
+              <div class="quiz-option" data-answer="wrong">6</div>
+              <div class="quiz-option" data-answer="correct">7</div>
+              <div class="quiz-option" data-answer="wrong">8</div>
+              <div class="quiz-option" data-answer="wrong">9</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Limit dari 2x + 1 saat x mendekati 3 adalah 2(3) + 1 = 7. Untuk fungsi kontinu seperti ini, limit sama dengan nilai fungsi di titik tersebut.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('limits-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('limits-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="derivatives" class="section">
+        <h2>Turunan</h2>
+        <p>Turunan mewakili <strong>laju perubahan sesaat</strong> dari suatu fungsi terhadap variabelnya. Ini memberikan kemiringan garis singgung pada fungsi di suatu titik tertentu. Turunan menjelaskan bagaimana perubahan variabel input mempengaruhi nilai output dari fungsi.</p>
+        
+        <div class="visualization">
+          <h3>Visualisasi Turunan sebagai Kemiringan</h3>
+          <p>Klik pada grafik untuk melihat garis singgung di titik tersebut:</p>
+          <div class="chart-container">
+            <canvas id="derivativeChart"></canvas>
+          </div>
+          <div class="controls">
+            <label for="derivativeX">Posisi x:</label>
+            <input type="range" id="derivativeX" min="-3" max="3" step="0.1" value="1" oninput="updateDerivativeChart()">
+            <span id="derivativeXValue">1</span>
+            <span>Kemiringan: <span id="slopeValue">2</span></span>
+          </div>
+        </div>
+
+        <div class="example" tabindex="0" aria-label="Contoh turunan">
+          <strong>Contoh:</strong><br>
+          Turunan dari $$f(x) = x^2$$ adalah $$f'(x) = 2x$$<br>
+          <em>Ini berarti pada setiap titik x, kemiringan kurva adalah 2x</em>
+        </div>
+        
+        <details>
+          <summary>Bagaimana Menginterpretasi Turunan?</summary>
+          <p>Turunan memberitahu seberapa cepat suatu nilai berubah pada saat tertentu. Dalam fisika, turunan bisa merepresentasikan:</p>
+          <ul>
+            <li><strong>Kecepatan</strong> = turunan posisi terhadap waktu</li>
+            <li><strong>Percepatan</strong> = turunan kecepatan terhadap waktu</li>
+            <li><strong>Kemiringan</strong> = turunan tinggi terhadap jarak horizontal</li>
+          </ul>
+        </details>
+
+        <div class="quiz-container">
+          <h3>Kuis: Turunan Dasar</h3>
+          <div class="quiz-question">
+            <h4>Berapa turunan dari f(x) = 3x⁴?</h4>
+            <div class="quiz-options" data-quiz="derivatives-1">
+              <div class="quiz-option" data-answer="wrong">3x³</div>
+              <div class="quiz-option" data-answer="correct">12x³</div>
+              <div class="quiz-option" data-answer="wrong">4x³</div>
+              <div class="quiz-option" data-answer="wrong">12x⁴</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Menggunakan aturan pangkat: d/dx[ax^n] = anx^(n-1), maka turunan dari 3x⁴ adalah 3 × 4 × x³ = 12x³.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('derivatives-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('derivatives-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="techniques" class="section">
+        <h2>Teknik Diferensiasi</h2>
+        <p>Aturan diferensiasi membantu kita mencari turunan fungsi yang kompleks dengan cara yang sistematis. Teknik diferensiasi menyediakan cara yang efisien untuk menghitung turunan dari berbagai jenis fungsi yang kompleks.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+          <div class="example">
+            <strong>Aturan Perkalian:</strong><br>
+            $$(fg)' = f'g + fg'$$
+            <p><em>Turunan dari perkalian dua fungsi</em></p>
+          </div>
+          
+          <div class="example">
+            <strong>Aturan Pembagian:</strong><br>
+            $$\left(\frac{f}{g}\right)' = \frac{f'g - fg'}{g^2}$$
+            <p><em>Turunan dari pembagian dua fungsi</em></p>
+          </div>
+          
+          <div class="example">
+            <strong>Aturan Rantai:</strong><br>
+            $$\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}$$
+            <p><em>Untuk fungsi komposit</em></p>
+          </div>
+        </div>
+
+        <div class="visualization">
+          <h3>Demonstrasi Aturan Rantai</h3>
+          <p>Contoh: h(x) = (3x² + 2)⁵</p>
+          <div class="controls">
+            <label for="chainX">Nilai x:</label>
+            <input type="range" id="chainX" min="-2" max="2" step="0.1" value="1" oninput="updateChainRule()">
+            <span id="chainXValue">1</span>
+          </div>
+          <div style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+            <p><strong>Langkah-langkah:</strong></p>
+            <ol>
+              <li>u = 3x² + 2, maka u' = 6x</li>
+              <li>h = u⁵, maka h' = 5u⁴</li>
+              <li>h'(x) = 5u⁴ · 6x = 30x(3x² + 2)⁴</li>
+            </ol>
+            <p>Pada x = <span id="chainCurrentX">1</span>: h'(x) = <span id="chainResult">750</span></p>
+          </div>
+        </div>
+
+        <div class="quiz-container">
+          <h3>Kuis: Aturan Rantai</h3>
+          <div class="quiz-question">
+            <h4>Berapa turunan dari f(x) = (2x + 1)³?</h4>
+            <div class="quiz-options" data-quiz="techniques-1">
+              <div class="quiz-option" data-answer="wrong">3(2x + 1)²</div>
+              <div class="quiz-option" data-answer="correct">6(2x + 1)²</div>
+              <div class="quiz-option" data-answer="wrong">2(2x + 1)²</div>
+              <div class="quiz-option" data-answer="wrong">(2x + 1)²</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Menggunakan aturan rantai: f'(x) = 3(2x + 1)² × 2 = 6(2x + 1)². Jangan lupa mengalikan dengan turunan dari fungsi dalam kurung!</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('techniques-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('techniques-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="integrals" class="section">
+        <h2>Integral</h2>
+        <p>Integral adalah operasi <strong>invers dari turunan</strong> dan mewakili akumulasi kuantitas, seperti luas di bawah kurva. Integral dalah salah satu konsep dasar kalkulus yang digunakan untuk menghitung luas, volume, dan banyak aspek lain dari analisis matematis.</p>
+        
+        <div class="visualization">
+          <h3>Visualisasi Integral sebagai Luas</h3>
+          <p>Lihat bagaimana integral menghitung luas di bawah kurva:</p>
+          <div class="controls">
+            <label for="integralA">Batas bawah (a):</label>
+            <input type="range" id="integralA" min="0" max="3" step="0.1" value="0" oninput="updateIntegralChart()">
+            <span id="integralAValue">0</span>
+            
+            <label for="integralB">Batas atas (b):</label>
+            <input type="range" id="integralB" min="0" max="3" step="0.1" value="2" oninput="updateIntegralChart()">
+            <span id="integralBValue">2</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="integralChart"></canvas>
+          </div>
+          <div style="text-align: center; margin-top: 1rem; font-weight: bold; color: #667eea;">
+            Luas = <span id="areaValue">2.67</span> satuan persegi
+          </div>
+        </div>
+
+        <div class="example" tabindex="0" aria-label="Contoh integral">
+          <strong>Contoh:</strong><br>
+          $$\int 2x \, dx = x^2 + C$$
+          <p><em>Integral dari 2x adalah x² plus konstanta integrasi C</em></p>
+        </div>
+        
+        <details>
+          <summary>Integral Tentu dan Tak Tentu</summary>
+          <p><strong>Integral tak tentu</strong> mencakup konstanta arbitrer C karena ada banyak fungsi yang memiliki turunan sama.</p>
+          <p><strong>Integral tentu</strong> menghitung luas bersih antara fungsi dan sumbu x pada interval tertentu, tanpa konstanta C.</p>
+        </details>
+
+        <div class="quiz-container">
+          <h3>Kuis: Integral Dasar</h3>
+          <div class="quiz-question">
+            <h4>Berapa hasil dari ∫ 4x³ dx?</h4>
+            <div class="quiz-options" data-quiz="integrals-1">
+              <div class="quiz-option" data-answer="wrong">4x⁴ + C</div>
+              <div class="quiz-option" data-answer="correct">x⁴ + C</div>
+              <div class="quiz-option" data-answer="wrong">12x² + C</div>
+              <div class="quiz-option" data-answer="wrong">x³ + C</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> ∫ 4x³ dx = 4 × (x⁴/4) + C = x⁴ + C. Ingat aturan pangkat untuk integral: ∫ x^n dx = x^(n+1)/(n+1) + C.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('integrals-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('integrals-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="fundamental-theorem" class="section">
+        <h2>Teorema Fundamental Kalkulus</h2>
+        <p>Teorema ini menghubungkan <strong>diferensiasi dan integrasi</strong>, menunjukkan bahwa keduanya adalah proses yang saling berkebalikan. Teorema ini mengaitkan konsep kalkulus diferensial dengan kalkulus integral, menunjukkan hubungan matematis yang mendalam di antara keduanya.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+          <div class="example">
+            <strong>Bagian 1:</strong><br>
+            Jika F(x) adalah antiturunan dari f(x), maka:<br>
+            $$\int_a^b f(x) dx = F(b) - F(a)$$
+          </div>
+          
+          <div class="example">
+            <strong>Bagian 2:</strong><br>
+            Turunan dari integral adalah fungsi aslinya:<br>
+            $$\frac{d}{dx}\int_a^x f(t) dt = f(x)$$
+          </div>
+        </div>
+
+        <div class="visualization">
+          <h3>Demonstrasi Teorema Fundamental</h3>
+          <p>Contoh: F(x) = x³, maka F'(x) = 3x²</p>
+          <div class="chart-container">
+            <canvas id="fundamentalChart"></canvas>
+          </div>
+          <div style="text-align: center; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+            <strong>Verifikasi:</strong><br>
+            $$\int_0^1 3x^2 dx = [x^3]_0^1 = 1^3 - 0^3 = 1$$
+          </div>
+        </div>
+
+        <div class="quiz-container">
+          <h3>Kuis: Teorema Fundamental</h3>
+          <div class="quiz-question">
+            <h4>Jika F(x) = x²/2, berapa nilai ∫₀² F'(x) dx?</h4>
+            <div class="quiz-options" data-quiz="fundamental-1">
+              <div class="quiz-option" data-answer="wrong">1</div>
+              <div class="quiz-option" data-answer="correct">2</div>
+              <div class="quiz-option" data-answer="wrong">4</div>
+              <div class="quiz-option" data-answer="wrong">8</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> F'(x) = x, maka ∫₀² x dx = [x²/2]₀² = 4/2 - 0 = 2. Teorema Fundamental mengatakan integral dari turunan menghasilkan selisih nilai fungsi asli.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('fundamental-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('fundamental-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="series-sequences" class="section">
+        <h2>Deret dan Barisan</h2>
+        <p>Barisan adalah daftar angka yang terurut, sedangkan deret adalah penjumlahan dari suku-suku barisan. Konsep ini penting dalam kalkulus untuk pendekatan nilai. Barisan adalah urutan bilangan atau ekspresi yang disusun dengan aturan tertentu, sementara deret adalah jumlah dari elemen-elemen barisan.</p>
+        
+        <div class="visualization">
+          <h3>Visualisasi Deret Geometri</h3>
+          <div class="controls">
+            <label for="geometricR">Rasio (r):</label>
+            <input type="range" id="geometricR" min="0.1" max="0.9" step="0.1" value="0.5" oninput="updateGeometricSeries()">
+            <span id="geometricRValue">0.5</span>
+            
+            <label for="geometricTerms">Jumlah suku:</label>
+            <input type="range" id="geometricTerms" min="1" max="10" step="1" value="5" oninput="updateGeometricSeries()">
+            <span id="geometricTermsValue">5</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="seriesChart"></canvas>
+          </div>
+          <div style="text-align: center; margin-top: 1rem;">
+            <strong>Jumlah parsial:</strong> <span id="partialSum">1.97</span><br>
+            <strong>Limit (r < 1):</strong> <span id="seriesLimit">2.00</span>
+          </div>
+        </div>
+        
+        <details>
+          <summary>Deret Geometri</summary>
+          <p>Deret geometri memiliki suku a, ar, ar², ar³, ...</p>
+          <p>Jumlah n suku pertama: $$S_n = a \frac{1-r^n}{1-r}$$ jika r ≠ 1</p>
+          <p>Jika |r| < 1, maka jumlah tak hingga: $$S_\infty = \frac{a}{1-r}$$</p>
+        </details>
+        
+        <details>
+          <summary>Konvergensi</summary>
+          <p>Deret <strong>konvergen</strong> jika jumlahnya mendekati nilai tertentu saat jumlah suku bertambah tak hingga.</p>
+          <p>Deret <strong>divergen</strong> jika jumlahnya tidak mendekati nilai tertentu (bisa menuju tak hingga atau berosilasi).</p>
+        </details>
+
+        <div class="quiz-container">
+          <h3>Kuis: Deret Geometri</h3>
+          <div class="quiz-question">
+            <h4>Berapa jumlah tak hingga dari deret 1 + 1/2 + 1/4 + 1/8 + ...?</h4>
+            <div class="quiz-options" data-quiz="series-1">
+              <div class="quiz-option" data-answer="wrong">1</div>
+              <div class="quiz-option" data-answer="correct">2</div>
+              <div class="quiz-option" data-answer="wrong">3</div>
+              <div class="quiz-option" data-answer="wrong">Tak hingga</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Ini adalah deret geometri dengan a = 1 dan r = 1/2. Karena |r| < 1, jumlah tak hingga = a/(1-r) = 1/(1-1/2) = 2.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('series-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('series-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="multivariable" class="section">
+        <h2>Kalkulus Multivariabel</h2>
+        <p>Memperluas kalkulus pada fungsi dengan beberapa variabel, melibatkan turunan parsial dan integral berganda. Kalkulus multivariabel memperluas konsep kalkulus diferensial dan integral ke fungsi dengan lebih dari satu variabel, biasanya dua atau tiga variabel.</p>
+        
+        <div class="visualization">
+          <h3>Visualisasi Fungsi 2 Variabel: f(x,y) = x² + y²</h3>
+          <div class="controls">
+            <label for="multiX">Nilai x:</label>
+            <input type="range" id="multiX" min="-2" max="2" step="0.2" value="1" oninput="updateMultivariable()">
+            <span id="multiXValue">1</span>
+            
+            <label for="multiY">Nilai y:</label>
+            <input type="range" id="multiY" min="-2" max="2" step="0.2" value="1" oninput="updateMultivariable()">
+            <span id="multiYValue">1</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="background: rgba(102, 126, 234, 0.1); padding: 1rem; border-radius: 10px;">
+              <strong>Turunan Parsial terhadap x:</strong><br>
+              ∂f/∂x = 2x = <span id="partialX">2</span>
+            </div>
+            <div style="background: rgba(118, 75, 162, 0.1); padding: 1rem; border-radius: 10px;">
+              <strong>Turunan Parsial terhadap y:</strong><br>
+              ∂f/∂y = 2y = <span id="partialY">2</span>
+            </div>
+          </div>
+          <div style="text-align: center; margin-top: 1rem; font-size: 1.2rem; font-weight: bold;">
+            f(<span id="currentX">1</span>, <span id="currentY">1</span>) = <span id="functionValue">2</span>
+          </div>
+        </div>
+
+        <div class="example" tabindex="0" aria-label="Contoh kalkulus multivariabel">
+          <strong>Contoh Turunan Parsial:</strong><br>
+          $$\frac{\partial}{\partial x} (x^2 y) = 2xy$$
+          <p><em>y dianggap konstan saat menurunkan terhadap x</em></p>
+        </div>
+
+        <div class="quiz-container">
+          <h3>Kuis: Turunan Parsial</h3>
+          <div class="quiz-question">
+            <h4>Berapa ∂/∂y (3xy² + x²)?</h4>
+            <div class="quiz-options" data-quiz="multivariable-1">
+              <div class="quiz-option" data-answer="wrong">3x + 2x</div>
+              <div class="quiz-option" data-answer="correct">6xy</div>
+              <div class="quiz-option" data-answer="wrong">3y² + x²</div>
+              <div class="quiz-option" data-answer="wrong">6xy + 2x</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Saat menurunkan terhadap y, x dianggap konstan. Turunan dari 3xy² adalah 6xy, dan turunan dari x² (konstan terhadap y) adalah 0.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('multivariable-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('multivariable-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="optimization" class="section">
+        <h2>Masalah Optimasi</h2>
+        <p>Kalkulus digunakan untuk mencari nilai <strong>maksimum atau minimum</strong> fungsi, yang sangat penting di berbagai bidang seperti ekonomi, fisika, dan rekayasa. Kalkulus menyediakan tools untuk mencari nilai ekstrim (maksimum dan minimum) dari fungsi, yang sangat penting di berbagai bidang.</p>
+        
+        <div class="visualization">
+          <h3>Mencari Maksimum/Minimum: f(x) = -x² + 4x + 1</h3>
+          <div class="chart-container">
+            <canvas id="optimizationChart"></canvas>
+          </div>
+          <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+            <strong>Langkah-langkah:</strong>
+            <ol>
+              <li>f'(x) = -2x + 4</li>
+              <li>Titik kritis: f'(x) = 0 → x = 2</li>
+              <li>f''(x) = -2 < 0 → maksimum di x = 2</li>
+              <li>Nilai maksimum: f(2) = 5</li>
+            </ol>
+          </div>
+        </div>
+        
+        <details>
+          <summary>Cara Menyelesaikan Masalah Optimasi</summary>
+          <ol>
+            <li><strong>Cari turunan pertama</strong> f'(x)</li>
+            <li><strong>Set f'(x) = 0</strong> untuk mencari titik kritis</li>
+            <li><strong>Gunakan uji turunan kedua:</strong>
+              <ul>
+                <li>Jika f''(x) > 0 → minimum lokal</li>
+                <li>Jika f''(x) < 0 → maksimum lokal</li>
+                <li>Jika f''(x) = 0 → perlu uji lebih lanjut</li>
+              </ul>
+            </li>
+            <li><strong>Evaluasi</strong> nilai fungsi di titik-titik kritis dan batas domain</li>
+          </ol>
+        </details>
+
+        <div class="quiz-container">
+          <h3>Kuis: Optimasi</h3>
+          <div class="quiz-question">
+            <h4>Pada titik mana fungsi f(x) = x³ - 3x² + 2 mencapai minimum lokal?</h4>
+            <div class="quiz-options" data-quiz="optimization-1">
+              <div class="quiz-option" data-answer="wrong">x = 0</div>
+              <div class="quiz-option" data-answer="wrong">x = 1</div>
+              <div class="quiz-option" data-answer="correct">x = 2</div>
+              <div class="quiz-option" data-answer="wrong">x = 3</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> f'(x) = 3x² - 6x = 3x(x - 2) = 0 memberikan x = 0 dan x = 2. f''(x) = 6x - 6, sehingga f''(2) = 6 > 0, menunjukkan minimum lokal di x = 2.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('optimization-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('optimization-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+
+      <section id="applications" class="section">
+        <h2>Aplikasi Kalkulus</h2>
+        <p>Kalkulus memiliki aplikasi yang sangat luas dalam berbagai bidang kehidupan. Aplikasi praktis kalkulus ditemukan di hampir semua bidang sains, teknologi, dan ekonomi.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+          <div class="example">
+            <strong>🔬 Fisika</strong><br>
+            • Analisis gerak dan dinamika<br>
+            • Hukum kekekalan energi<br>
+            • Elektromagnetisme<br>
+            • Mekanika kuantum
+          </div>
+          
+          <div class="example">
+            <strong>⚙️ Rekayasa</strong><br>
+            • Optimasi desain struktur<br>
+            • Analisis sinyal dan sistem<br>
+            • Kontrol otomatis<br>
+            • Pemrosesan gambar
+          </div>
+          
+          <div class="example">
+            <strong>💰 Ekonomi</strong><br>
+            • Maksimasi keuntungan<br>
+            • Minimasi biaya produksi<br>
+            • Analisis elastisitas<br>
+            • Model pertumbuhan ekonomi
+          </div>
+          
+          <div class="example">
+            <strong>🧬 Biologi</strong><br>
+            • Model pertumbuhan populasi<br>
+            • Dinamika penyebaran penyakit<br>
+            • Farmakologi (dosis obat)<br>
+            • Evolusi dan seleksi alam
+          </div>
+          
+          <div class="example">
+            <strong>💻 Ilmu Komputer</strong><br>
+            • Machine Learning<br>
+            • Computer Graphics<br>
+            • Algoritma optimasi<br>
+            • Analisis kompleksitas
+          </div>
+          
+          <div class="example">
+            <strong>🌍 Lingkungan</strong><br>
+            • Model perubahan iklim<br>
+            • Dinamika fluida (air, udara)<br>
+            • Konservasi sumber daya<br>
+            • Analisis polusi
+          </div>
+        </div>
+
+        <div class="visualization">
+          <h3>Contoh: Model Pertumbuhan Populasi</h3>
+          <p>Model logistik: P(t) = K / (1 + Ae^(-rt))</p>
+          <div class="controls">
+            <label for="growthRate">Laju pertumbuhan (r):</label>
+            <input type="range" id="growthRate" min="0.1" max="1" step="0.1" value="0.5" oninput="updatePopulationModel()">
+            <span id="growthRateValue">0.5</span>
+            
+            <label for="carryingCapacity">Kapasitas dukung (K):</label>
+            <input type="range" id="carryingCapacity" min="100" max="1000" step="50" value="500" oninput="updatePopulationModel()">
+            <span id="carryingCapacityValue">500</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="populationChart"></canvas>
+          </div>
+        </div>
+
+        <div class="quiz-container">
+          <h3>Kuis: Aplikasi Kalkulus</h3>
+          <div class="quiz-question">
+            <h4>Dalam fisika, apa yang direpresentasikan oleh turunan kedua posisi terhadap waktu?</h4>
+            <div class="quiz-options" data-quiz="applications-1">
+              <div class="quiz-option" data-answer="wrong">Posisi</div>
+              <div class="quiz-option" data-answer="wrong">Kecepatan</div>
+              <div class="quiz-option" data-answer="correct">Percepatan</div>
+              <div class="quiz-option" data-answer="wrong">Gaya</div>
+            </div>
+            <div class="quiz-feedback">
+              <p><strong>Benar!</strong> Percepatan adalah turunan kedua posisi terhadap waktu, atau turunan pertama kecepatan terhadap waktu. Ini adalah konsep fundamental dalam kinematika.</p>
+            </div>
+          </div>
+          <button class="quiz-button" onclick="checkQuizAnswer('applications-1')">Periksa Jawaban</button>
+          <button class="quiz-button" onclick="nextQuestion('applications-1')" style="display: none;">Lanjut</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<footer>
+  &copy; 2024 Portal Belajar Kalkulus - Pembelajaran Interaktif dengan Visualisasi & Quiz 🚀
+  <br>
+  <small style="margin-top: 0.5rem; display: block; opacity: 0.8;">
+    💡 Progress disimpan secara lokal. Untuk sinkronisasi antar perangkat, pertimbangkan integrasi cloud storage.
+  </small>
+</footer>
+
+<div id="scroll-progress" aria-hidden="true"></div>
+
+<!-- Achievement Popup -->
+<div id="achievementPopup" class="achievement-popup">
+  <h4 id="achievementTitle">🎉 Pencapaian Baru!</h4>
+  <p id="achievementText">Anda telah menyelesaikan kuis pertama!</p>
+</div>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  }
+};
+
+// Chart.js default configuration
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.plugins.legend.display = false;
+
+// Learning Progress System
+class LearningProgress {
+  constructor() {
+    this.userProgress = this.loadProgress();
+    this.totalQuizzes = 10;
+    this.achievements = {
+      'beginner': { name: '🎓 Pemula', description: 'Menyelesaikan kuis pertama', condition: () => this.userProgress.totalQuizzes > 0 },
+      'quiz-master': { name: '🧠 Master Quiz', description: 'Menyelesaikan 5 kuis', condition: () => this.userProgress.totalQuizzes >= 5 },
+      'perfect-score': { name: '⭐ Skor Sempurna', description: 'Mendapat skor 100%', condition: () => this.userProgress.perfectScores > 0 },
+      'dedicated': { name: '🔥 Belajar Konsisten', description: 'Belajar 3 hari berturut-turut', condition: () => this.userProgress.streakDays >= 3 },
+      'expert': { name: '👑 Ahli Kalkulus', description: 'Menyelesaikan semua materi', condition: () => this.userProgress.totalQuizzes === this.totalQuizzes }
+    };
+    this.updateLastVisit();
+    this.updateDisplay();
+  }
+
+  loadProgress() {
+    const defaultProgress = {
+      totalPoints: 0,
+      totalQuizzes: 0,
+      perfectScores: 0,
+      topicProgress: {},
+      unlockedBadges: [],
+      streakDays: 0,
+      lastVisit: null,
+      visitDates: []
+    };
+    
+    const saved = localStorage.getItem('calculusProgress');
+    return saved ? { ...defaultProgress, ...JSON.parse(saved) } : defaultProgress;
+  }
+
+  saveProgress() {
+    localStorage.setItem('calculusProgress', JSON.stringify(this.userProgress));
+  }
+
+  updateLastVisit() {
+    const today = new Date().toDateString();
+    const lastVisit = this.userProgress.lastVisit;
+    
+    if (lastVisit !== today) {
+      this.userProgress.visitDates.push(today);
+      this.userProgress.lastVisit = today;
+      
+      // Calculate streak
+      if (lastVisit) {
+        const lastDate = new Date(lastVisit);
+        const todayDate = new Date(today);
+        const diffTime = todayDate - lastDate;
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        
+        if (diffDays === 1) {
+          this.userProgress.streakDays++;
+        } else if (diffDays > 1) {
+          this.userProgress.streakDays = 1;
+        }
+      } else {
+        this.userProgress.streakDays = 1;
+      }
+      
+      this.saveProgress();
+    }
+  }
+
+  addPoints(points) {
+    this.userProgress.totalPoints += points;
+    this.saveProgress();
+    this.updateDisplay();
+  }
+
+  completeQuiz(topicId, score) {
+    if (!this.userProgress.topicProgress[topicId]) {
+      this.userProgress.topicProgress[topicId] = { completed: 0, bestScore: 0 };
+    }
+    
+    const topicProgress = this.userProgress.topicProgress[topicId];
+    topicProgress.completed++;
+    topicProgress.bestScore = Math.max(topicProgress.bestScore, score);
+    
+    this.userProgress.totalQuizzes++;
+    if (score === 100) {
+      this.userProgress.perfectScores++;
+    }
+    
+    // Award points based on score
+    const points = Math.round(score / 10);
+    this.addPoints(points);
+    
+    this.checkAchievements();
+    this.updateTopicProgress(topicId);
+    this.saveProgress();
+    this.updateDisplay();
+  }
+
+  checkAchievements() {
+    Object.keys(this.achievements).forEach(key => {
+      if (!this.userProgress.unlockedBadges.includes(key) && this.achievements[key].condition()) {
+        this.unlockAchievement(key);
+      }
+    });
+  }
+
+  unlockAchievement(achievementKey) {
+    this.userProgress.unlockedBadges.push(achievementKey);
+    const achievement = this.achievements[achievementKey];
+    this.showAchievementPopup(achievement.name, achievement.description);
+    
+    // Update badge display
+    const badgeElement = document.getElementById(`badge-${achievementKey}`);
+    if (badgeElement) {
+      badgeElement.classList.remove('locked');
+    }
+  }
+
+  showAchievementPopup(title, description) {
+    const popup = document.getElementById('achievementPopup');
+    const titleElement = document.getElementById('achievementTitle');
+    const textElement = document.getElementById('achievementText');
+    
+    titleElement.textContent = title;
+    textElement.textContent = description;
+    
+    popup.classList.add('show');
+    setTimeout(() => popup.classList.remove('show'), 4000);
+  }
+
+  updateTopicProgress(topicId) {
+    const progressElement = document.querySelector(`[data-topic="${topicId}"]`);
+    if (progressElement) {
+      const progress = this.userProgress.topicProgress[topicId];
+      if (progress && progress.completed > 0) {
+        progressElement.textContent = '✓';
+        progressElement.classList.add('completed');
+      }
+    }
+  }
+
+  updateDisplay() {
+    // Update header stats
+    document.getElementById('totalPoints').textContent = this.userProgress.totalPoints;
+    document.getElementById('totalBadges').textContent = this.userProgress.unlockedBadges.length;
+    document.getElementById('overallProgress').textContent = Math.round((this.userProgress.totalQuizzes / this.totalQuizzes) * 100) + '%';
+    
+    // Update dashboard
+    document.getElementById('dashboardPoints').textContent = this.userProgress.totalPoints;
+    document.getElementById('dashboardQuizzes').textContent = `${this.userProgress.totalQuizzes}/${this.totalQuizzes}`;
+    document.getElementById('dashboardBadgesCount').textContent = this.userProgress.unlockedBadges.length;
+    document.getElementById('dashboardOverallProgress').textContent = Math.round((this.userProgress.totalQuizzes / this.totalQuizzes) * 100) + '%';
+    
+    // Update topic progress indicators
+    Object.keys(this.userProgress.topicProgress).forEach(topicId => {
+      this.updateTopicProgress(topicId);
+    });
+    
+    // Update learning path steps
+    const completedQuizzes = this.userProgress.totalQuizzes;
+    const steps = ['step-1', 'step-2', 'step-3', 'step-4'];
+    steps.forEach((stepId, index) => {
+      const stepElement = document.getElementById(stepId);
+      if (stepElement) {
+        stepElement.classList.remove('current', 'completed');
+        if (completedQuizzes > index * 2.5) {
+          stepElement.classList.add('completed');
+        } else if (completedQuizzes >= index * 2.5) {
+          stepElement.classList.add('current');
+        }
+      }
+    });
+    
+    // Update badges
+    this.userProgress.unlockedBadges.forEach(badgeKey => {
+      const badgeElement = document.getElementById(`badge-${badgeKey}`);
+      if (badgeElement) {
+        badgeElement.classList.remove('locked');
+      }
+    });
+  }
+}
+
+// Initialize progress system
+const progressSystem = new LearningProgress();
+
+// Quiz System
+function checkQuizAnswer(quizId) {
+  const quizContainer = document.querySelector(`[data-quiz="${quizId}"]`);
+  const selectedOption = quizContainer.querySelector('.quiz-option.selected');
+  
+  if (!selectedOption) {
+    alert('Silakan pilih jawaban terlebih dahulu!');
+    return;
+  }
+  
+  const allOptions = quizContainer.querySelectorAll('.quiz-option');
+  const feedbackElement = quizContainer.parentElement.querySelector('.quiz-feedback');
+  const nextButton = quizContainer.parentElement.querySelector('.quiz-button:last-child');
+  const checkButton = quizContainer.parentElement.querySelector('.quiz-button:first-child');
+  
+  let isCorrect = false;
+  
+  allOptions.forEach(option => {
+    option.style.pointerEvents = 'none';
+    if (option.dataset.answer === 'correct') {
+      option.classList.add('correct');
+      if (option.classList.contains('selected')) {
+        isCorrect = true;
+      }
+    } else if (option.classList.contains('selected')) {
+      option.classList.add('incorrect');
+    }
+  });
+  
+  // Show feedback
+  feedbackElement.classList.add('show');
+  if (!isCorrect) {
+    feedbackElement.classList.add('incorrect');
+    feedbackElement.innerHTML = '<p><strong>Salah!</strong> Silakan pelajari materi ini lagi dan coba jawaban yang benar.</p>';
+  }
+  
+  // Update UI
+  checkButton.style.display = 'none';
+  nextButton.style.display = 'inline-block';
+  
+  // Update progress
+  const topicId = quizId.split('-')[0];
+  const score = isCorrect ? 100 : 0;
+  progressSystem.completeQuiz(topicId, score);
+}
+
+function nextQuestion(quizId) {
+  // Reset quiz state
+  const quizContainer = document.querySelector(`[data-quiz="${quizId}"]`);
+  const allOptions = quizContainer.querySelectorAll('.quiz-option');
+  const feedbackElement = quizContainer.parentElement.querySelector('.quiz-feedback');
+  const nextButton = quizContainer.parentElement.querySelector('.quiz-button:last-child');
+  const checkButton = quizContainer.parentElement.querySelector('.quiz-button:first-child');
+  
+  allOptions.forEach(option => {
+    option.classList.remove('selected', 'correct', 'incorrect');
+    option.style.pointerEvents = 'auto';
+  });
+  
+  feedbackElement.classList.remove('show', 'incorrect');
+  nextButton.style.display = 'none';
+  checkButton.style.display = 'inline-block';
+}
+
+// Quiz option selection
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('quiz-option')) {
+    const quizContainer = e.target.closest('.quiz-options');
+    const allOptions = quizContainer.querySelectorAll('.quiz-option');
+    
+    allOptions.forEach(option => option.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+});
+
+// Global variables for charts
+let basicChart, limitChart, derivativeChart, integralChart, fundamentalChart, seriesChart, optimizationChart, populationChart;
+
+// Mobile menu toggle
+const menuToggle = document.getElementById('menu-toggle');
+const sidebarNav = document.getElementById('sidebar-nav');
+
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+    menuToggle.setAttribute('aria-expanded', !expanded);
+    sidebarNav.classList.toggle('open');
+  });
+}
+
+// Navigation and scroll handling
+const sections = document.querySelectorAll('section.section');
+const navLinks = document.querySelectorAll('nav a.nav-link');
+const scrollProgress = document.getElementById('scroll-progress');
+
+function onScroll() {
+  const scrollPos = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPercent = docHeight ? (scrollPos / docHeight) * 100 : 0;
+  scrollProgress.style.width = scrollPercent + '%';
+
+  let currentSectionId = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (scrollPos >= top) currentSectionId = section.id;
+  });
+
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href').substring(1) === currentSectionId);
+  });
+
+  sections.forEach(section => {
+    const topPos = section.getBoundingClientRect().top;
+    if (topPos < window.innerHeight - 100) {
+      section.classList.add('visible');
+    }
+  });
+}
+
+window.addEventListener('scroll', onScroll);
+window.addEventListener('load', onScroll);
+
+// Initialize all charts when page loads
+window.addEventListener('load', () => {
+  initializeCharts();
+  onScroll();
+});
+
+function initializeCharts() {
+  // Basic Function Chart
+  const basicCtx = document.getElementById('basicFunctionChart');
+  if (basicCtx) {
+    basicChart = new Chart(basicCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'f(x)',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { title: { display: true, text: 'f(x)' } }
+        },
+        plugins: { title: { display: true, text: 'Fungsi Matematika Dasar' } }
+      }
+    });
+    updateBasicChart();
+  }
+
+  // Limit Chart
+  const limitCtx = document.getElementById('limitChart');
+  if (limitCtx) {
+    limitChart = new Chart(limitCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'f(x) = 3x + 1',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          pointRadius: 0
+        }, {
+          label: 'Approaching point',
+          data: [],
+          borderColor: '#764ba2',
+          backgroundColor: '#764ba2',
+          pointRadius: 8,
+          showLine: false
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { title: { display: true, text: 'f(x)' } }
+        },
+        plugins: { 
+          title: { display: true, text: 'Visualisasi Limit' },
+          legend: { display: true }
+        }
+      }
+    });
+    updateLimitChart();
+  }
+
+  // Derivative Chart
+  const derivativeCtx = document.getElementById('derivativeChart');
+  if (derivativeCtx) {
+    derivativeChart = new Chart(derivativeCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'f(x) = x²',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }, {
+          label: 'Tangent line',
+          data: [],
+          borderColor: '#764ba2',
+          borderWidth: 2,
+          pointRadius: 0,
+          borderDash: [5, 5]
+        }, {
+          label: 'Point',
+          data: [],
+          borderColor: '#e53e3e',
+          backgroundColor: '#e53e3e',
+          pointRadius: 6,
+          showLine: false
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { title: { display: true, text: 'f(x)' } }
+        },
+        plugins: { 
+          title: { display: true, text: 'Turunan sebagai Kemiringan Garis Singgung' },
+          legend: { display: true }
+        }
+      }
+    });
+    updateDerivativeChart();
+  }
+
+  // Integral Chart
+  const integralCtx = document.getElementById('integralChart');
+  if (integralCtx) {
+    integralChart = new Chart(integralCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'f(x) = x²',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.3)',
+          borderWidth: 3,
+          fill: 'origin',
+          tension: 0.4
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { title: { display: true, text: 'f(x)' } }
+        },
+        plugins: { title: { display: true, text: 'Integral sebagai Luas di Bawah Kurva' } }
+      }
+    });
+    updateIntegralChart();
+  }
+
+  // Fundamental Theorem Chart
+  const fundamentalCtx = document.getElementById('fundamentalChart');
+  if (fundamentalCtx) {
+    fundamentalChart = new Chart(fundamentalCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'F(x) = x³',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          yAxisID: 'y'
+        }, {
+          label: "F'(x) = 3x²",
+          data: [],
+          borderColor: '#764ba2',
+          backgroundColor: 'rgba(118, 75, 162, 0.1)',
+          borderWidth: 3,
+          yAxisID: 'y1'
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { 
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'F(x)' }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: "F'(x)" },
+            grid: { drawOnChartArea: false }
+          }
+        },
+        plugins: { 
+          title: { display: true, text: 'Fungsi dan Turunannya' },
+          legend: { display: true }
+        }
+      }
+    });
+    
+    const xValues = [];
+    const funcValues = [];
+    const derivValues = [];
+    for (let x = -2; x <= 2; x += 0.1) {
+      xValues.push(x.toFixed(1));
+      funcValues.push(Math.pow(x, 3));
+      derivValues.push(3 * Math.pow(x, 2));
+    }
+    
+    fundamentalChart.data.labels = xValues;
+    fundamentalChart.data.datasets[0].data = funcValues;
+    fundamentalChart.data.datasets[1].data = derivValues;
+    fundamentalChart.update();
+  }
+
+  // Series Chart
+  const seriesCtx = document.getElementById('seriesChart');
+  if (seriesCtx) {
+    seriesChart = new Chart(seriesCtx, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Suku ke-n',
+          data: [],
+          backgroundColor: 'rgba(102, 126, 234, 0.7)',
+          borderColor: '#667eea',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'n (suku ke-)' } },
+          y: { title: { display: true, text: 'Nilai suku' } }
+        },
+        plugins: { title: { display: true, text: 'Deret Geometri' } }
+      }
+    });
+    updateGeometricSeries();
+  }
+
+  // Optimization Chart
+  const optimizationCtx = document.getElementById('optimizationChart');
+  if (optimizationCtx) {
+    optimizationChart = new Chart(optimizationCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'f(x) = -x² + 4x + 1',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }, {
+          label: 'Maksimum',
+          data: [],
+          borderColor: '#e53e3e',
+          backgroundColor: '#e53e3e',
+          pointRadius: 8,
+          showLine: false
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'x' } },
+          y: { title: { display: true, text: 'f(x)' } }
+        },
+        plugins: { 
+          title: { display: true, text: 'Masalah Optimasi' },
+          legend: { display: true }
+        }
+      }
+    });
+    
+    const xValues = [];
+    const funcValues = [];
+    for (let x = -1; x <= 5; x += 0.1) {
+      xValues.push(x.toFixed(1));
+      funcValues.push(-Math.pow(x, 2) + 4*x + 1);
+    }
+    
+    optimizationChart.data.labels = xValues;
+    optimizationChart.data.datasets[0].data = funcValues;
+    optimizationChart.data.datasets[1].data = [{x: 2, y: 5}];
+    optimizationChart.update();
+  }
+
+  // Population Chart
+  const populationCtx = document.getElementById('populationChart');
+  if (populationCtx) {
+    populationChart = new Chart(populationCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Populasi P(t)',
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'Waktu (t)' } },
+          y: { title: { display: true, text: 'Populasi' } }
+        },
+        plugins: { title: { display: true, text: 'Model Pertumbuhan Populasi Logistik' } }
+      }
+    });
+    updatePopulationModel();
+  }
+}
+
+// Chart update functions
+function updateBasicChart() {
+  if (!basicChart) return;
+  
+  const functionType = document.getElementById('functionType')?.value || 'linear';
+  const xValues = [];
+  const yValues = [];
+  
+  for (let x = -5; x <= 5; x += 0.2) {
+    xValues.push(x.toFixed(1));
+    let y;
+    switch(functionType) {
+      case 'linear':
+        y = 2*x + 1;
+        break;
+      case 'quadratic':
+        y = 0.5*x*x - 2*x + 1;
+        break;
+      case 'cubic':
+        y = 0.1*x*x*x - 0.5*x*x + x;
+        break;
+      case 'exponential':
+        y = Math.exp(0.3*x);
+        break;
+      default:
+        y = x;
+    }
+    yValues.push(y);
+  }
+  
+  basicChart.data.labels = xValues;
+  basicChart.data.datasets[0].data = yValues;
+  basicChart.update();
+}
+
+function updateLimitChart() {
+  if (!limitChart) return;
+  
+  const limitPoint = parseFloat(document.getElementById('limitPoint')?.value || 2);
+  document.getElementById('limitValue').textContent = limitPoint;
+  
+  const xValues = [];
+  const yValues = [];
+  const approachPoint = [];
+  
+  for (let x = limitPoint - 2; x <= limitPoint + 2; x += 0.1) {
+    xValues.push(x.toFixed(1));
+    yValues.push(3*x + 1);
+  }
+  
+  approachPoint.push({x: limitPoint, y: 3*limitPoint + 1});
+  
+  limitChart.data.labels = xValues;
+  limitChart.data.datasets[0].data = yValues;
+  limitChart.data.datasets[1].data = approachPoint;
+  limitChart.update();
+}
+
+function updateDerivativeChart() {
+  if (!derivativeChart) return;
+  
+  const x0 = parseFloat(document.getElementById('derivativeX')?.value || 1);
+  document.getElementById('derivativeXValue').textContent = x0;
+  document.getElementById('slopeValue').textContent = (2 * x0).toFixed(2);
+  
+  const xValues = [];
+  const funcValues = [];
+  const tangentValues = [];
+  const point = [];
+  
+  for (let x = -3; x <= 3; x += 0.1) {
+    xValues.push(x.toFixed(1));
+    funcValues.push(x * x);
+    
+    // Tangent line: y - y0 = m(x - x0)
+    const y0 = x0 * x0;
+    const m = 2 * x0;
+    tangentValues.push(y0 + m * (x - x0));
+  }
+  
+  point.push({x: x0, y: x0 * x0});
+  
+  derivativeChart.data.labels = xValues;
+  derivativeChart.data.datasets[0].data = funcValues;
+  derivativeChart.data.datasets[1].data = tangentValues;
+  derivativeChart.data.datasets[2].data = point;
+  derivativeChart.update();
+}
+
+function updateIntegralChart() {
+  if (!integralChart) return;
+  
+  const a = parseFloat(document.getElementById('integralA')?.value || 0);
+  const b = parseFloat(document.getElementById('integralB')?.value || 2);
+  
+  document.getElementById('integralAValue').textContent = a;
+  document.getElementById('integralBValue').textContent = b;
+  
+  const area = (Math.pow(b, 3) - Math.pow(a, 3)) / 3;
+  document.getElementById('areaValue').textContent = area.toFixed(2);
+  
+  const xValues = [];
+  const yValues = [];
+  
+  for (let x = 0; x <= 3; x += 0.1) {
+    xValues.push(x.toFixed(1));
+    if (x >= a && x <= b) {
+      yValues.push(x * x);
+    } else {
+      yValues.push(null);
+    }
+  }
+  
+  integralChart.data.labels = xValues;
+  integralChart.data.datasets[0].data = yValues;
+  integralChart.update();
+}
+
+function updateGeometricSeries() {
+  if (!seriesChart) return;
+  
+  const r = parseFloat(document.getElementById('geometricR')?.value || 0.5);
+  const n = parseInt(document.getElementById('geometricTerms')?.value || 5);
+  
+  document.getElementById('geometricRValue').textContent = r;
+  document.getElementById('geometricTermsValue').textContent = n;
+  
+  const labels = [];
+  const values = [];
+  let sum = 0;
+  
+  for (let i = 1; i <= n; i++) {
+    labels.push(i.toString());
+    const term = Math.pow(r, i-1);
+    values.push(term);
+    sum += term;
+  }
+  
+  const limit = 1 / (1 - r);
+  
+  document.getElementById('partialSum').textContent = sum.toFixed(2);
+  document.getElementById('seriesLimit').textContent = limit.toFixed(2);
+  
+  seriesChart.data.labels = labels;
+  seriesChart.data.datasets[0].data = values;
+  seriesChart.update();
+}
+
+function updateChainRule() {
+  const x = parseFloat(document.getElementById('chainX')?.value || 1);
+  document.getElementById('chainXValue').textContent = x;
+  document.getElementById('chainCurrentX').textContent = x;
+  
+  const result = 30 * x * Math.pow(3*x*x + 2, 4);
+  document.getElementById('chainResult').textContent = result.toFixed(0);
+}
+
+function updateMultivariable() {
+  const x = parseFloat(document.getElementById('multiX')?.value || 1);
+  const y = parseFloat(document.getElementById('multiY')?.value || 1);
+  
+  document.getElementById('multiXValue').textContent = x;
+  document.getElementById('multiYValue').textContent = y;
+  document.getElementById('currentX').textContent = x;
+  document.getElementById('currentY').textContent = y;
+  
+  const functionValue = x*x + y*y;
+  const partialX = 2*x;
+  const partialY = 2*y;
+  
+  document.getElementById('functionValue').textContent = functionValue.toFixed(1);
+  document.getElementById('partialX').textContent = partialX.toFixed(1);
+  document.getElementById('partialY').textContent = partialY.toFixed(1);
+}
+
+function updatePopulationModel() {
+  if (!populationChart) return;
+  
+  const r = parseFloat(document.getElementById('growthRate')?.value || 0.5);
+  const K = parseFloat(document.getElementById('carryingCapacity')?.value || 500);
+  
+  document.getElementById('growthRateValue').textContent = r;
+  document.getElementById('carryingCapacityValue').textContent = K;
+  
+  const A = 9; // Initial condition parameter
+  const tValues = [];
+  const pValues = [];
+  
+  for (let t = 0; t <= 20; t += 0.5) {
+    tValues.push(t.toFixed(1));
+    const P = K / (1 + A * Math.exp(-r * t));
+    pValues.push(P);
+  }
+  
+  populationChart.data.labels = tValues;
+  populationChart.data.datasets[0].data = pValues;
+  populationChart.update();
+}
+
+// Smooth scrolling for details
+document.querySelectorAll('details').forEach(detail => {
+  detail.addEventListener('toggle', () => {
+    if (detail.open) {
+      setTimeout(() => detail.scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
+    }
+  });
+});
+</script>
+
+</body>
+</html>
